@@ -450,7 +450,19 @@ class _SubscriptionDialogState extends State<SubscriptionDialog>
           decoration: InputDecoration(
             labelText: label,
             hintText: hint,
-            prefixIcon: Icon(icon, size: 16),
+            prefixIcon: Padding(
+              padding: EdgeInsets.only(
+                top: maxLines > 1 ? 16.0 : 0.0,
+                bottom: maxLines > 1 ? (maxLines - 1) * 20.0 : 0.0,
+              ),
+              child: Icon(icon, size: 16),
+            ),
+            prefixIconConstraints: maxLines > 1
+                ? const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  )
+                : null,
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
