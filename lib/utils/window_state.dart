@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:screen_retriever/screen_retriever.dart';
 import 'package:stelliberty/storage/preferences.dart';
 import 'package:stelliberty/i18n/i18n.dart';
 import 'logger.dart';
@@ -40,64 +39,21 @@ class WindowStateManager {
       final silentStart =
           forceSilent || AppPreferences.instance.getSilentStartEnabled();
 
-      Size windowSize = state.size;
-      bool shouldCenter = true;
+      // 直接使用保存的窗口尺寸，无论是否最大化
+      final windowSize = state.size;
+      const shouldCenter = true;
 
-      // 最大化状态下使用屏幕可见区域尺寸（考虑 DPI 缩放和任务栏）
-      if (state.isMaximized) {
-        try {
-          // 获取所有显示器信息
-          final displays = await screenRetriever.getAllDisplays();
-
-          // 查找包含窗口位置的显示器（多显示器支持）
-          Display? targetDisplay;
-          if (state.hasPosition) {
-            final savedPosition = state.position!;
-            for (final display in displays) {
-              final visiblePos = display.visiblePosition ?? const Offset(0, 0);
-              final visibleSize = display.visibleSize ?? display.size;
-
-              // 判断位置是否在当前显示器可见区域
-              if (savedPosition.dx >= visiblePos.dx &&
-                  savedPosition.dx < visiblePos.dx + visibleSize.width &&
-                  savedPosition.dy >= visiblePos.dy &&
-                  savedPosition.dy < visiblePos.dy + visibleSize.height) {
-                targetDisplay = display;
-                break;
-              }
-            }
-          }
-
-          // 未找到合适显示器时使用主显示器
-          targetDisplay ??= await screenRetriever.getPrimaryDisplay();
-
-          windowSize = targetDisplay.visibleSize ?? targetDisplay.size;
-          shouldCenter = false;
-
-          Logger.info(
-            "窗口状态: 最大化=true, 目标显示器=${targetDisplay.name ?? 'Unknown'}, "
-            "可见区域=${windowSize.width}x${windowSize.height}, 缩放=${targetDisplay.scaleFactor}",
-          );
-        } catch (e) {
-          Logger.warning("获取屏幕尺寸失败，使用保存的尺寸：$e");
-          Logger.info(
-            "窗口状态: 最大化=true, 尺寸=${windowSize.width}x${windowSize.height}",
-          );
-        }
-      } else {
-        Logger.info(
-          "窗口状态: 最大化=false, 尺寸=${windowSize.width}x${windowSize.height}",
-        );
-      }
+      Logger.info(
+        "窗口状态: 最大化=${state.isMaximized}, 尺寸=${windowSize.width}x${windowSize.height}",
+      );
+      // 等待窗口初始化完成
+      await windowManager.waitUntilReadyToShow();
 
       // 设置窗口尺寸和位置
       await windowManager.setSize(windowSize);
       if (shouldCenter) {
         await windowManager.center();
       }
-
-      // 等待窗口初始化完成
-      await windowManager.waitUntilReadyToShow();
 
       // 渲染完成后再显示窗口
       if (!silentStart) {
@@ -106,7 +62,7 @@ class WindowStateManager {
             if (state.isMaximized) {
               await windowManager.maximize();
             }
-            appWindow.show();
+            await windowManager.show();
           } catch (e) {
             Logger.error("显示窗口失败：$e");
           }
@@ -119,7 +75,7 @@ class WindowStateManager {
       await windowManager.setSize(_defaultSize);
       await windowManager.waitUntilReadyToShow();
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        appWindow.show();
+        await windowManager.show();
       });
     }
   }

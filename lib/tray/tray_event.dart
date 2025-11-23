@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:stelliberty/utils/logger.dart';
+import 'package:stelliberty/utils/window_state.dart';
 import 'package:stelliberty/clash/manager/manager.dart';
 import 'package:stelliberty/clash/providers/clash_provider.dart';
 import 'package:stelliberty/clash/providers/subscription_provider.dart';
@@ -116,7 +116,7 @@ class TrayEventHandler with TrayListener {
         Logger.info('窗口透明度已恢复');
       }
 
-      appWindow.show();
+      await windowManager.show();
 
       Logger.info('窗口已显示 (最大化：$shouldMaximize)');
     } catch (e) {
@@ -196,7 +196,7 @@ class TrayEventHandler with TrayListener {
     Logger.info('正在退出应用...');
 
     try {
-      // 先停止 Clash 进程(若正在运行)
+      // 1. 先停止 Clash 进程(若正在运行)
       if (_clashProvider != null && _clashProvider!.isRunning) {
         Logger.info('正在停止 Clash 进程...');
         // 先禁用系统代理,再停止核心
@@ -205,7 +205,15 @@ class TrayEventHandler with TrayListener {
         Logger.info('Clash 进程已停止');
       }
 
-      // 销毁窗口并退出
+      // 2. 保存窗口状态
+      try {
+        await WindowStateManager.saveStateOnClose();
+        Logger.info('窗口状态已保存');
+      } catch (e) {
+        Logger.error('保存窗口状态失败：$e');
+      }
+
+      // 3. 销毁窗口并退出
       await windowManager.destroy();
       exit(0);
     } catch (e) {
