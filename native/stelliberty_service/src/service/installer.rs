@@ -542,7 +542,10 @@ fn execute_with_privilege(script: &str) -> Result<()> {
         .context("执行 osascript 失败")?;
 
     if !status.success() {
-        bail!("命令执行失败，退出码：{}", status.code().unwrap_or(-1));
+        let exit_code = status
+            .code()
+            .map_or_else(|| "未知".to_string(), |c| c.to_string());
+        bail!("命令执行失败，退出码：{}", exit_code);
     }
 
     Ok(())
@@ -569,14 +572,21 @@ pub fn install_service() -> Result<()> {
             println!("服务已在运行中");
             return Ok(());
         }
+
+        // plist 存在但服务未运行，尝试加载
+        println!("服务已安装但未运行，正在启动...");
+        let load_script = format!("launchctl load {}", SERVICE_PLIST_PATH);
+        execute_with_privilege(&load_script)?;
+        println!("服务启动成功");
+        return Ok(());
     }
 
     // 生成 plist 内容
     let plist_content = get_launchd_plist(&service_binary.display().to_string());
 
-    // 创建临时文件
-    let temp_plist = format!("/tmp/{}.plist", SERVICE_LABEL);
-    fs::write(&temp_plist, plist_content).context("创建临时 plist 文件失败")?;
+    // 创建临时文件（使用唯一路径避免冲突）
+    let temp_plist = "/tmp/stelliberty-service-install.plist";
+    fs::write(temp_plist, plist_content).context("创建临时 plist 文件失败")?;
 
     // 使用 AppleScript 提权执行安装命令
     let install_script = format!(
@@ -587,14 +597,13 @@ pub fn install_service() -> Result<()> {
     execute_with_privilege(&install_script)?;
 
     // 清理临时文件
-    let _ = fs::remove_file(&temp_plist);
+    let _ = fs::remove_file(temp_plist);
 
     println!("服务安装成功");
     println!();
     println!("可以使用以下命令管理服务:");
     println!("sudo launchctl list {}  - 查看状态", SERVICE_LABEL);
-    println!("sudo launchctl stop {}  - 停止服务", SERVICE_LABEL);
-    println!("sudo launchctl start {} - 启动服务", SERVICE_LABEL);
+    println!("sudo launchctl unload {} - 卸载服务", SERVICE_PLIST_PATH);
 
     Ok(())
 }
@@ -642,8 +651,8 @@ pub fn start_service() -> Result<()> {
         return Ok(());
     }
 
-    // 使用 AppleScript 提权启动服务
-    let start_script = format!("launchctl start {}", SERVICE_LABEL);
+    // 使用 AppleScript 提权加载服务（launchd 使用 load 来启动）
+    let start_script = format!("launchctl load {}", SERVICE_PLIST_PATH);
     execute_with_privilege(&start_script)?;
 
     println!("服务启动成功");
@@ -658,8 +667,19 @@ pub fn stop_service() -> Result<()> {
         bail!("服务未安装");
     }
 
-    // 使用 AppleScript 提权停止服务
-    let stop_script = format!("launchctl stop {}", SERVICE_LABEL);
+    // 检查服务是否在运行
+    let status = Command::new("launchctl")
+        .args(["list", SERVICE_LABEL])
+        .output()
+        .context("检查服务状态失败")?;
+
+    if !status.status.success() {
+        println!("服务已处于停止状态");
+        return Ok(());
+    }
+
+    // 使用 AppleScript 提权卸载服务（launchd 使用 unload 来停止）
+    let stop_script = format!("launchctl unload {}", SERVICE_PLIST_PATH);
     execute_with_privilege(&stop_script)?;
 
     println!("服务停止成功");
