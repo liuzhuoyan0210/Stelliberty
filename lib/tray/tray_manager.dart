@@ -199,6 +199,7 @@ class AppTrayManager {
       final menu = Menu(
         items: [
           MenuItem(key: 'close_menu', label: translate.tray.closeMenu),
+          MenuItem(key: 'show_window', label: translate.tray.showWindow),
           MenuItem.separator(),
           // 出站模式子菜单
           MenuItem.submenu(

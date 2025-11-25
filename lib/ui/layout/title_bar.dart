@@ -139,7 +139,7 @@ class WindowButtons extends StatelessWidget {
       }
 
       await windowManager.setOpacity(0.0);
-      await windowManager.hide();
+      await windowManager.setSkipTaskbar(true);
       return;
     }
 

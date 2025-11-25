@@ -48,35 +48,31 @@ class WindowStateManager {
       );
       // 等待窗口初始化完成
       await windowManager.waitUntilReadyToShow();
-
+      // 静默启动：显示后立即隐藏（设置透明度为0并从任务栏移除）
+      if (silentStart) {
+        await windowManager.setOpacity(0.0);
+        await windowManager.setSkipTaskbar(true);
+        Logger.info("静默启动模式：窗口已渲染但设置为透明且从任务栏隐藏");
+      }
       // 设置窗口尺寸和位置
       await windowManager.setSize(windowSize);
       if (shouldCenter) {
         await windowManager.center();
       }
 
-      // 渲染完成后再显示窗口
-      if (!silentStart) {
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          try {
-            if (state.isMaximized) {
-              await windowManager.maximize();
-            }
-            await windowManager.show();
-          } catch (e) {
-            Logger.error("显示窗口失败：$e");
-          }
-        });
-      } else {
-        Logger.info("静默启动模式：窗口将不会显示");
+      try {
+        if (state.isMaximized) {
+          await windowManager.maximize();
+        }
+        await windowManager.show();
+      } catch (e) {
+        Logger.error("显示窗口失败：$e");
       }
     } catch (e) {
       Logger.error("加载窗口状态失败：$e");
       await windowManager.setSize(_defaultSize);
       await windowManager.waitUntilReadyToShow();
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await windowManager.show();
-      });
+      await windowManager.show();
     }
   }
 

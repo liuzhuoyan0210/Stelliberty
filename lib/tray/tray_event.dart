@@ -107,26 +107,22 @@ class TrayEventHandler with TrayListener {
   // 显示窗口,修复隐藏后恢复闪屏问题
   Future<void> showWindow() async {
     try {
-      // 先检查窗口是否可见,避免不必要操作
+      // 先检查窗口是否可见且不透明度不为0,避免不必要操作
       final isVisible = await windowManager.isVisible();
-      if (isVisible) {
-        // 窗口已显示,仅需聚焦
+      final opacity = await windowManager.getOpacity();
+
+      if (isVisible && opacity > 0) {
+        // 窗口已显示且不透明,仅需聚焦
         await windowManager.focus();
-        Logger.info('窗口已可见，仅执行聚焦');
+        Logger.info('窗口已可见且不透明（opacity: $opacity），仅执行聚焦');
         return;
       }
 
       // 获取保存的窗口状态
       final shouldMaximize = AppPreferences.instance.getIsMaximized();
 
-      // 恢复透明度
-      final opacity = await windowManager.getOpacity();
-      if (opacity < 1.0) {
-        await windowManager.setOpacity(1.0);
-      }
-
-      // 先显示窗口，然后根据保存的状态决定是否最大化
-      await windowManager.show();
+      await windowManager.setOpacity(1.0);
+      await windowManager.setSkipTaskbar(false);
 
       // 根据保存的状态恢复窗口
       if (shouldMaximize) {
