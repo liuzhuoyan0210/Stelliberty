@@ -331,7 +331,8 @@ class _OverrideDialogState extends State<OverrideDialog>
                 label: 'URL',
                 hint: 'https://example.com/override.yaml',
                 icon: Icons.link,
-                maxLines: 2,
+                minLines: 1,
+                maxLines: null,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return context.translate.kOverride.urlError;
@@ -361,7 +362,8 @@ class _OverrideDialogState extends State<OverrideDialog>
     required String label,
     required String hint,
     required IconData icon,
-    int maxLines = 1,
+    int? minLines,
+    int? maxLines = 1,
     String? Function(String?)? validator,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -380,6 +382,7 @@ class _OverrideDialogState extends State<OverrideDialog>
         ),
         child: TextFormField(
           controller: controller,
+          minLines: minLines,
           maxLines: maxLines,
           validator: validator,
           decoration: InputDecoration(

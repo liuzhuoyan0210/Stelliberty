@@ -355,7 +355,8 @@ class _SubscriptionDialogState extends State<SubscriptionDialog>
                     context.translate.subscriptionDialog.subscriptionLinkLabel,
                 hint: context.translate.subscriptionDialog.subscriptionLinkHint,
                 icon: Icons.link,
-                maxLines: 3,
+                minLines: 1,
+                maxLines: null,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return context.translate.subscriptionDialog.linkError;
@@ -426,7 +427,8 @@ class _SubscriptionDialogState extends State<SubscriptionDialog>
     required String label,
     required String hint,
     required IconData icon,
-    int maxLines = 1,
+    int? minLines,
+    int? maxLines = 1,
     String? Function(String?)? validator,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -445,21 +447,13 @@ class _SubscriptionDialogState extends State<SubscriptionDialog>
         ),
         child: TextFormField(
           controller: controller,
+          minLines: minLines,
           maxLines: maxLines,
           validator: validator,
           decoration: InputDecoration(
             labelText: label,
             hintText: hint,
-            prefixIcon: Padding(
-              padding: EdgeInsets.only(
-                top: maxLines > 1 ? 16.0 : 0.0,
-                bottom: maxLines > 1 ? (maxLines - 1) * 20.0 : 0.0,
-              ),
-              child: Icon(icon, size: 16),
-            ),
-            prefixIconConstraints: maxLines > 1
-                ? const BoxConstraints(minWidth: 48, minHeight: 48)
-                : null,
+            prefixIcon: Icon(icon, size: 16),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
