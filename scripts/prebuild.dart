@@ -761,13 +761,12 @@ Future<void> setupInnoSetup({required String projectRoot}) async {
       return;
     } else {
       log('💡 当前版本: $installedVersion，最新版本: $latestVersion');
-      log('💡 如需升级请手动安装');
-      log('✅ Inno Setup 已安装，可以正常使用');
-      return;
+      log('🔄 检测到新版本，将自动升级...');
+      // 继续执行安装流程以升级到最新版本
     }
+  } else {
+    log('⚠️  未检测到 Inno Setup');
   }
-
-  log('⚠️  未检测到 Inno Setup');
 
   // 需要安装
   log('📥 正在下载 Inno Setup $latestVersion...');
