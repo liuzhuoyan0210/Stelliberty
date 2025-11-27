@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:stelliberty/ui/common/modern_feature_card.dart';
 import 'package:stelliberty/ui/common/modern_dropdown_menu.dart';
 import 'package:stelliberty/ui/common/modern_text_field.dart';
+import 'package:stelliberty/ui/common/modern_switch.dart';
 import 'package:stelliberty/ui/widgets/modern_multiline_text_field.dart';
 import 'package:stelliberty/ui/notifiers/system_proxy_notifier.dart';
 import 'package:stelliberty/i18n/i18n.dart';
@@ -168,24 +169,64 @@ class _SystemProxyCardState extends State<SystemProxyCard> {
       const SizedBox(height: 16),
 
       // PAC 模式开关
-      SwitchListTile(
-        title: Text(context.translate.systemProxy.pacMode),
-        subtitle: Text(context.translate.systemProxy.pacModeDesc),
-        value: _viewModel.usePacMode,
-        onChanged: _viewModel.togglePacMode,
-        contentPadding: EdgeInsets.zero,
+      Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.translate.systemProxy.pacMode,
+                  style: theme.textTheme.titleSmall,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  context.translate.systemProxy.pacModeDesc,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          ModernSwitch(
+            value: _viewModel.usePacMode,
+            onChanged: _viewModel.togglePacMode,
+          ),
+        ],
       ),
       const SizedBox(height: 12),
 
       // 根据模式显示不同的配置
       if (!_viewModel.usePacMode) ...[
         // 使用默认绕过规则开关
-        SwitchListTile(
-          title: Text(context.translate.systemProxy.useDefaultBypass),
-          subtitle: Text(context.translate.systemProxy.useDefaultBypassDesc),
-          value: _viewModel.useDefaultBypass,
-          onChanged: _viewModel.toggleUseDefaultBypass,
-          contentPadding: EdgeInsets.zero,
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.translate.systemProxy.useDefaultBypass,
+                    style: theme.textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.translate.systemProxy.useDefaultBypassDesc,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            ModernSwitch(
+              value: _viewModel.useDefaultBypass,
+              onChanged: _viewModel.toggleUseDefaultBypass,
+            ),
+          ],
         ),
         const SizedBox(height: 12),
 
