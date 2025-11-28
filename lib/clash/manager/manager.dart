@@ -49,6 +49,10 @@ class ClashManager extends ChangeNotifier {
   // 获取最后一次的流量数据（用于组件初始化，避免显示零值）
   TrafficData? get lastTrafficData => _trafficMonitor.lastTrafficData;
 
+  // 获取波形图历史数据
+  List<double> get uploadHistory => _trafficMonitor.uploadHistory;
+  List<double> get downloadHistory => _trafficMonitor.downloadHistory;
+
   void resetTrafficStats() {
     _trafficMonitor.resetTotalTraffic();
   }

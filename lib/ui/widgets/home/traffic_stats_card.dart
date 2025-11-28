@@ -17,14 +17,6 @@ class TrafficStatsCard extends StatefulWidget {
 }
 
 class _TrafficStatsCardState extends State<TrafficStatsCard> {
-  // 存储最近的速度历史数据（上传/下载）
-  final List<double> _uploadHistory = List.generate(30, (_) => 0.0);
-  final List<double> _downloadHistory = List.generate(30, (_) => 0.0);
-
-  // 降采样计数器：减少波形图重绘频率
-  int _updateCounter = 0;
-  static const _updateInterval = 3; // 每 3 次数据只更新 1 次波形
-
   // 缓存最后一次的流量数据，避免页面切换时显示零值
   TrafficData? _lastTrafficData;
 
@@ -55,24 +47,11 @@ class _TrafficStatsCardState extends State<TrafficStatsCard> {
                 _lastTrafficData = snapshot.data;
               }
 
-              // 降采样：只处理部分数据更新波形
-              _updateCounter++;
-              final shouldUpdateWave = _updateCounter >= _updateInterval;
-              if (shouldUpdateWave) {
-                _updateCounter = 0;
-                _updateHistory(traffic);
-              }
-
               return BaseCard(
                 icon: Icons.data_usage,
                 title: context.translate.home.trafficStats,
                 trailing: _buildTotalTrafficDisplay(context, traffic),
-                child: _buildTrafficContent(
-                  context,
-                  traffic,
-                  isRunning,
-                  shouldUpdateWave: shouldUpdateWave,
-                ),
+                child: _buildTrafficContent(context, traffic, isRunning),
               );
             },
           )
@@ -137,15 +116,6 @@ class _TrafficStatsCardState extends State<TrafficStatsCard> {
     );
   }
 
-  void _updateHistory(TrafficData traffic) {
-    // 更新速度历史，移除最旧的数据，添加最新的
-    _uploadHistory.removeAt(0);
-    _uploadHistory.add(traffic.upload / 1024.0); // KB/s
-
-    _downloadHistory.removeAt(0);
-    _downloadHistory.add(traffic.download / 1024.0); // KB/s
-  }
-
   // 格式化字节数显示（自动选择 B、KB、MB、GB）
   String _formatBytes(int bytes) {
     if (bytes < 1024) {
@@ -185,9 +155,11 @@ class _TrafficStatsCardState extends State<TrafficStatsCard> {
   Widget _buildTrafficContent(
     BuildContext context,
     TrafficData traffic,
-    bool isRunning, {
-    bool shouldUpdateWave = true,
-  }) {
+    bool isRunning,
+  ) {
+    // 从 ClashManager 读取全局波形图历史数据
+    final manager = context.read<ClashManager>();
+
     return Column(
       children: [
         // 波形图 - 使用 RepaintBoundary 隔离重绘区域
@@ -198,8 +170,9 @@ class _TrafficStatsCardState extends State<TrafficStatsCard> {
             child: CustomPaint(
               size: const Size(double.infinity, 120),
               painter: _TrafficWavePainter(
-                uploadHistory: _uploadHistory,
-                downloadHistory: _downloadHistory,
+                // 从全局服务读取历史数据
+                uploadHistory: manager.uploadHistory,
+                downloadHistory: manager.downloadHistory,
                 uploadColor: Theme.of(context).colorScheme.primary,
                 downloadColor: Colors.green,
               ),
@@ -286,10 +259,8 @@ class _TrafficStatsCardState extends State<TrafficStatsCard> {
   void _resetTraffic(BuildContext context) {
     final clashManager = context.read<ClashManager>();
     clashManager.resetTrafficStats();
-    // 清空历史数据和本地缓存
+    // 清空本地缓存
     setState(() {
-      _uploadHistory.fillRange(0, _uploadHistory.length, 0);
-      _downloadHistory.fillRange(0, _downloadHistory.length, 0);
       _lastTrafficData = TrafficData.zero;
     });
   }
@@ -418,19 +389,30 @@ class _TrafficWavePainter extends CustomPainter {
     fillPath.moveTo(0, size.height);
     fillPath.lineTo(0, firstY);
 
-    // 绘制曲线
-    for (int i = 1; i < history.length; i++) {
-      final x = i * stepX;
-      final y = size.height - (history[i] / maxValue * size.height * 0.8);
+    // 绘制曲线（使用中点平滑算法）
+    for (int i = 1; i < history.length - 1; i++) {
+      final currentX = i * stepX;
+      final currentY =
+          size.height - (history[i] / maxValue * size.height * 0.8);
+      final nextX = (i + 1) * stepX;
+      final nextY =
+          size.height - (history[i + 1] / maxValue * size.height * 0.8);
 
-      // 使用二次贝塞尔曲线使波形更平滑
-      final prevX = (i - 1) * stepX;
-      final prevY =
-          size.height - (history[i - 1] / maxValue * size.height * 0.8);
-      final controlX = (prevX + x) / 2;
+      // 计算当前点和下一个点的中点
+      final midX = (currentX + nextX) / 2;
+      final midY = (currentY + nextY) / 2;
 
-      path.quadraticBezierTo(controlX, prevY, x, y);
-      fillPath.quadraticBezierTo(controlX, prevY, x, y);
+      // 贝塞尔曲线经过当前点，终点是到下一个点的中点
+      path.quadraticBezierTo(currentX, currentY, midX, midY);
+      fillPath.quadraticBezierTo(currentX, currentY, midX, midY);
+    }
+
+    // 处理最后一个点
+    if (history.length > 1) {
+      final lastX = (history.length - 1) * stepX;
+      final lastY = size.height - (history.last / maxValue * size.height * 0.8);
+      path.lineTo(lastX, lastY);
+      fillPath.lineTo(lastX, lastY);
     }
 
     // 填充区域

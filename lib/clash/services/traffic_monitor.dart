@@ -21,8 +21,16 @@ class TrafficMonitor {
   // 缓存最后一次的流量数据，避免组件重建时显示零值
   TrafficData? _lastTrafficData;
 
+  // 波形图历史数据（全局存储，避免页面切换时重置）
+  final List<double> _uploadHistory = List.generate(30, (_) => 0.0);
+  final List<double> _downloadHistory = List.generate(30, (_) => 0.0);
+
   // 流量数据流（供外部监听）
   Stream<TrafficData>? get trafficStream => _controller?.stream;
+
+  // 获取波形图历史数据（只读副本）
+  List<double> get uploadHistory => List.from(_uploadHistory);
+  List<double> get downloadHistory => List.from(_downloadHistory);
 
   // 是否正在监控
   bool get isMonitoring => _isMonitoring;
@@ -40,6 +48,9 @@ class TrafficMonitor {
     _totalDownload = 0;
     _lastTimestamp = null;
     _lastTrafficData = null;
+    // 清空波形图历史数据
+    _uploadHistory.fillRange(0, _uploadHistory.length, 0);
+    _downloadHistory.fillRange(0, _downloadHistory.length, 0);
     Logger.info('累计流量已重置');
   }
 
@@ -112,6 +123,12 @@ class TrafficMonitor {
         totalUpload: _totalUpload,
         totalDownload: _totalDownload,
       );
+
+      // 更新波形图历史数据
+      _uploadHistory.removeAt(0);
+      _uploadHistory.add(uploadInt / 1024.0); // KB/s
+      _downloadHistory.removeAt(0);
+      _downloadHistory.add(downloadInt / 1024.0); // KB/s
 
       // 缓存最后的数据
       _lastTrafficData = trafficData;
