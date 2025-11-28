@@ -8,6 +8,7 @@ import 'package:stelliberty/ui/common/modern_switch.dart';
 import 'package:stelliberty/utils/logger.dart';
 import 'package:stelliberty/ui/widgets/modern_toast.dart';
 import 'package:stelliberty/i18n/i18n.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 class ExternalControllerCard extends StatefulWidget {
   const ExternalControllerCard({super.key});
@@ -192,19 +193,24 @@ class _ExternalControllerCardState extends State<ExternalControllerCard> {
                       errorText: _addressError,
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.link_rounded, size: 20),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.content_copy_rounded, size: 20),
-                        tooltip:
+                      suffixIcon: ModernTooltip(
+                        message:
                             context.translate.externalController.copyAddress,
-                        onPressed: _isSaving
-                            ? null
-                            : () => _copyToClipboard(
-                                _addressController.text,
-                                context
-                                    .translate
-                                    .externalController
-                                    .copyAddress,
-                              ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.content_copy_rounded,
+                            size: 20,
+                          ),
+                          onPressed: _isSaving
+                              ? null
+                              : () => _copyToClipboard(
+                                  _addressController.text,
+                                  context
+                                      .translate
+                                      .externalController
+                                      .copyAddress,
+                                ),
+                        ),
                       ),
                     ),
                   ),
@@ -226,16 +232,24 @@ class _ExternalControllerCardState extends State<ExternalControllerCard> {
                       errorText: _secretError,
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.vpn_key_rounded, size: 20),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.content_copy_rounded, size: 20),
-                        tooltip:
+                      suffixIcon: ModernTooltip(
+                        message:
                             context.translate.externalController.copySecret,
-                        onPressed: _isSaving
-                            ? null
-                            : () => _copyToClipboard(
-                                _secretController.text,
-                                context.translate.externalController.copySecret,
-                              ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.content_copy_rounded,
+                            size: 20,
+                          ),
+                          onPressed: _isSaving
+                              ? null
+                              : () => _copyToClipboard(
+                                  _secretController.text,
+                                  context
+                                      .translate
+                                      .externalController
+                                      .copySecret,
+                                ),
+                        ),
                       ),
                     ),
                   ),

@@ -10,6 +10,7 @@ import 'package:stelliberty/ui/widgets/override/override_dialog.dart';
 import 'package:stelliberty/ui/widgets/override/override_card.dart';
 import 'package:stelliberty/ui/widgets/modern_toast.dart';
 import 'package:stelliberty/utils/logger.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 class OverridePage extends StatefulWidget {
   const OverridePage({super.key});
@@ -47,14 +48,15 @@ class _OverridePageState extends State<OverridePage> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              IconButton(
+              ModernIconTooltip(
+                message: context.translate.common.cancel,
+                icon: Icons.arrow_back,
+                filled: false,
                 onPressed: () {
                   context.read<ContentProvider>().switchView(
                     ContentView.subscriptions,
                   );
                 },
-                icon: const Icon(Icons.arrow_back),
-                tooltip: context.translate.common.cancel,
               ),
               const SizedBox(width: 8),
               Container(

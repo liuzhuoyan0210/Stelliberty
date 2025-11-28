@@ -10,6 +10,7 @@ import 'package:stelliberty/ui/widgets/modern_toast.dart';
 import 'package:stelliberty/ui/widgets/home/base_card.dart';
 import 'package:stelliberty/ui/widgets/home/info_container.dart';
 import 'package:stelliberty/utils/logger.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 /// Clash 信息卡片
 ///
@@ -45,46 +46,50 @@ class _ClashInfoCardState extends State<ClashInfoCard> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // 更新核心按钮
-          IconButton(
-            icon: _isUpdating
-                ? SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  )
-                : const Icon(Icons.system_update_alt, size: 18),
-            tooltip: context.translate.home.updateCore,
-            onPressed: (_isUpdating || _isRestarting)
-                ? null
-                : () => _updateCore(context),
-            style: IconButton.styleFrom(
-              minimumSize: const Size(32, 32),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ModernTooltip(
+            message: context.translate.home.updateCore,
+            child: IconButton(
+              icon: _isUpdating
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    )
+                  : const Icon(Icons.system_update_alt, size: 18),
+              onPressed: (_isUpdating || _isRestarting)
+                  ? null
+                  : () => _updateCore(context),
+              style: IconButton.styleFrom(
+                minimumSize: const Size(32, 32),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
             ),
           ),
           const SizedBox(width: 4),
           // 重启核心按钮
-          IconButton(
-            icon: _isRestarting
-                ? SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  )
-                : const Icon(Icons.restart_alt, size: 18),
-            tooltip: context.translate.proxy.restartCore,
-            onPressed: (isRunning && !_isUpdating && !_isRestarting)
-                ? () => _restartCore(context)
-                : null,
-            style: IconButton.styleFrom(
-              minimumSize: const Size(32, 32),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ModernTooltip(
+            message: context.translate.proxy.restartCore,
+            child: IconButton(
+              icon: _isRestarting
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    )
+                  : const Icon(Icons.restart_alt, size: 18),
+              onPressed: (isRunning && !_isUpdating && !_isRestarting)
+                  ? () => _restartCore(context)
+                  : null,
+              style: IconButton.styleFrom(
+                minimumSize: const Size(32, 32),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
             ),
           ),
         ],

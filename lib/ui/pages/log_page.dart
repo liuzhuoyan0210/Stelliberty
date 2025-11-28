@@ -6,6 +6,7 @@ import 'package:stelliberty/clash/providers/log_provider.dart';
 import 'package:stelliberty/i18n/i18n.dart';
 import 'package:stelliberty/ui/widgets/core_log/core_log_card.dart';
 import 'package:stelliberty/utils/logger.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 // 日志页面 - 显示 Clash 核心的实时日志
 // 使用 Material Design 3 风格，与连接页面保持一致
@@ -260,23 +261,21 @@ class _LogPageState extends State<LogPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // 暂停/恢复按钮
-                  IconButton.filledTonal(
-                    icon: Icon(
-                      provider.isPaused
-                          ? Icons.play_arrow_rounded
-                          : Icons.pause_rounded,
-                    ),
-                    tooltip: provider.isPaused
+                  ModernIconTooltip(
+                    message: provider.isPaused
                         ? context.translate.connection.resumeBtn
                         : context.translate.connection.pauseBtn,
+                    icon: provider.isPaused
+                        ? Icons.play_arrow_rounded
+                        : Icons.pause_rounded,
                     onPressed: provider.togglePause,
                     iconSize: 20,
                   ),
                   const SizedBox(width: 6),
                   // 清空日志按钮
-                  IconButton.filledTonal(
-                    icon: const Icon(Icons.delete_outline_rounded),
-                    tooltip: context.translate.logs.clearLogs,
+                  ModernIconTooltip(
+                    message: context.translate.logs.clearLogs,
+                    icon: Icons.delete_outline_rounded,
                     onPressed: provider.logs.isEmpty
                         ? null
                         : () {

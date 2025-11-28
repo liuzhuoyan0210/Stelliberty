@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:stelliberty/providers/content_provider.dart';
 import 'package:stelliberty/i18n/i18n.dart';
 import 'package:stelliberty/utils/logger.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 class ClashFeaturesPage extends StatefulWidget {
   const ClashFeaturesPage({super.key});
@@ -33,11 +34,12 @@ class _ClashFeaturesPageState extends State<ClashFeaturesPage> {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
+                ModernIconTooltip(
+                  message: context.translate.clashFeatures.backToSettings,
+                  icon: Icons.arrow_back,
+                  filled: false,
                   onPressed: () =>
                       provider.switchView(ContentView.settingsOverview),
-                  tooltip: context.translate.clashFeatures.backToSettings,
                 ),
                 const SizedBox(width: 8),
                 Text(

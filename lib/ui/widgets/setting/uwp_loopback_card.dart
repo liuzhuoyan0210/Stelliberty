@@ -4,6 +4,7 @@ import 'package:stelliberty/i18n/i18n.dart';
 import 'package:stelliberty/ui/common/modern_feature_card.dart';
 import 'package:stelliberty/ui/common/empty.dart';
 import 'package:stelliberty/ui/widgets/setting/uwp_loopback_dialog.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 /// UWP 回环管理卡片
 /// 仅在 Windows 平台显示
@@ -21,12 +22,14 @@ class UwpLoopbackCard extends StatelessWidget {
       icon: Icons.apps,
       title: context.translate.uwpLoopback.cardTitle,
       subtitle: context.translate.uwpLoopback.cardSubtitle,
-      trailing: IconButton(
-        icon: const Icon(Icons.open_in_new),
-        onPressed: () {
-          UwpLoopbackDialog.show(context);
-        },
-        tooltip: context.translate.uwpLoopback.openManager,
+      trailing: ModernTooltip(
+        message: context.translate.uwpLoopback.openManager,
+        child: IconButton(
+          icon: const Icon(Icons.open_in_new),
+          onPressed: () {
+            UwpLoopbackDialog.show(context);
+          },
+        ),
       ),
       enableHover: true,
       enableTap: false,

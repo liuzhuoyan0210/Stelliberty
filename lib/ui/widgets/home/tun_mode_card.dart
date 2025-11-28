@@ -7,6 +7,7 @@ import 'package:stelliberty/services/permission_service.dart';
 import 'package:stelliberty/ui/widgets/home/base_card.dart';
 import 'package:stelliberty/ui/common/modern_switch.dart';
 import 'package:stelliberty/i18n/i18n.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 // 虚拟网卡模式控制卡片
 //
@@ -93,7 +94,7 @@ class _TunModeCardState extends State<TunModeCard> {
     final theme = Theme.of(context);
     final isAvailable = canEnableTun;
 
-    return Tooltip(
+    return ModernTooltip(
       message: isAvailable ? '' : _getPlatformRequirementHint(context),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -6,6 +6,7 @@ import 'package:stelliberty/clash/providers/subscription_provider.dart';
 import 'package:stelliberty/i18n/i18n.dart';
 import 'package:stelliberty/ui/widgets/modern_toast.dart';
 import 'package:stelliberty/ui/common/modern_popup_menu.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 // 订阅卡片组件
 // 显示订阅的详细信息：
@@ -178,31 +179,33 @@ class SubscriptionCard extends StatelessWidget {
         const SizedBox(width: 8),
         // 独立更新按钮（更新时显示转圈指示器）
         if (!subscription.isLocalFile)
-          IconButton(
-            onPressed: isDisabled ? null : onUpdate,
-            icon: isUpdating
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        colorScheme.primary,
+          ModernTooltip(
+            message: context.translate.subscription.updateCard,
+            child: IconButton(
+              onPressed: isDisabled ? null : onUpdate,
+              icon: isUpdating
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          colorScheme.primary,
+                        ),
                       ),
+                    )
+                  : Icon(
+                      Icons.sync_rounded,
+                      size: 20,
+                      color: isBatchUpdating
+                          ? Colors.grey.withValues(alpha: 0.3)
+                          : colorScheme.primary,
                     ),
-                  )
-                : Icon(
-                    Icons.sync_rounded,
-                    size: 20,
-                    color: isBatchUpdating
-                        ? Colors.grey.withValues(alpha: 0.3)
-                        : colorScheme.primary,
-                  ),
-            tooltip: context.translate.subscription.updateCard,
-            style: IconButton.styleFrom(
-              padding: const EdgeInsets.all(8),
-              minimumSize: const Size(32, 32),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              style: IconButton.styleFrom(
+                padding: const EdgeInsets.all(8),
+                minimumSize: const Size(32, 32),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
             ),
           ),
         // 更多操作菜单（使用自定义弹出菜单）

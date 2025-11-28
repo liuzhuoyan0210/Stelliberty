@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stelliberty/clash/data/clash_model.dart';
 import 'package:stelliberty/ui/common/empty.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 /// 代理节点卡片组件 - 磨砂玻璃风格
 ///
@@ -74,7 +75,7 @@ class _ProxyNodeCardState extends State<ProxyNodeCard> {
       colorScheme.surface.withValues(alpha: isDark ? 0.7 : 0.85),
     );
 
-    return Tooltip(
+    return ModernTooltip(
       message: widget.node.name,
       child: Container(
         decoration: BoxDecoration(

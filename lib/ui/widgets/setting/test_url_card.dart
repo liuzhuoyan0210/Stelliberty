@@ -6,6 +6,7 @@ import 'package:stelliberty/clash/config/clash_defaults.dart';
 import 'package:stelliberty/clash/storage/preferences.dart';
 import 'package:stelliberty/ui/common/modern_feature_card.dart';
 import 'package:stelliberty/ui/common/modern_text_field.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 // 测速链接配置卡片
 class TestUrlCard extends StatefulWidget {
@@ -73,22 +74,24 @@ class _TestUrlCardState extends State<TestUrlCard> {
               hintText: ClashDefaults.defaultTestUrl,
               suffixIcon: Padding(
                 padding: const EdgeInsets.only(right: 4),
-                child: IconButton(
-                  icon: const Icon(Icons.restore),
-                  tooltip:
+                child: ModernTooltip(
+                  message:
                       context.translate.clashFeatures.testUrl.restoreDefault,
-                  onPressed: () {
-                    setState(() {
-                      _testUrlController.text = ClashDefaults.defaultTestUrl;
-                    });
-                    final clashProvider = Provider.of<ClashProvider>(
-                      context,
-                      listen: false,
-                    );
-                    clashProvider.configService.setTestUrl(
-                      _testUrlController.text,
-                    );
-                  },
+                  child: IconButton(
+                    icon: const Icon(Icons.restore),
+                    onPressed: () {
+                      setState(() {
+                        _testUrlController.text = ClashDefaults.defaultTestUrl;
+                      });
+                      final clashProvider = Provider.of<ClashProvider>(
+                        context,
+                        listen: false,
+                      );
+                      clashProvider.configService.setTestUrl(
+                        _testUrlController.text,
+                      );
+                    },
+                  ),
                 ),
               ),
               onSubmitted: (value) {

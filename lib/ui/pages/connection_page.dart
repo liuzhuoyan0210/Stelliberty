@@ -6,6 +6,7 @@ import 'package:stelliberty/utils/logger.dart';
 import 'package:stelliberty/i18n/i18n.dart';
 import 'package:stelliberty/ui/widgets/connection/connection_card.dart';
 import 'package:stelliberty/ui/widgets/connection/connection_detail_dialog.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 // 连接页面 - 显示当前活跃的连接
 // 使用 Material Design 3 风格，与代理和订阅页面保持一致
@@ -177,31 +178,29 @@ class _ConnectionPageContentState extends State<ConnectionPageContent> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // 暂停/恢复按钮
-              IconButton.filledTonal(
-                icon: Icon(
-                  provider.isPaused
-                      ? Icons.play_arrow_rounded
-                      : Icons.pause_rounded,
-                ),
-                tooltip: provider.isPaused
+              ModernIconTooltip(
+                message: provider.isPaused
                     ? context.translate.connection.resumeBtn
                     : context.translate.connection.pauseBtn,
+                icon: provider.isPaused
+                    ? Icons.play_arrow_rounded
+                    : Icons.pause_rounded,
                 onPressed: () => provider.togglePause(),
                 iconSize: 20,
               ),
               const SizedBox(width: 6),
               // 手动刷新按钮
-              IconButton.filledTonal(
-                icon: const Icon(Icons.refresh_rounded),
-                tooltip: context.translate.connection.refreshBtn,
+              ModernIconTooltip(
+                message: context.translate.connection.refreshBtn,
+                icon: Icons.refresh_rounded,
                 onPressed: () => provider.refreshConnections(),
                 iconSize: 20,
               ),
               const SizedBox(width: 6),
               // 关闭所有连接按钮
-              IconButton.filledTonal(
-                icon: const Icon(Icons.clear_all_rounded),
-                tooltip: context.translate.connection.closeAllConnections,
+              ModernIconTooltip(
+                message: context.translate.connection.closeAllConnections,
+                icon: Icons.clear_all_rounded,
                 onPressed: totalCount > 0
                     ? () => _closeAllConnections(context, provider)
                     : null,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stelliberty/clash/data/connection_model.dart';
 import 'package:stelliberty/i18n/i18n.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 class ConnectionCard extends StatelessWidget {
   final ConnectionInfo connection;
@@ -90,17 +91,19 @@ class ConnectionCard extends StatelessWidget {
                         maxLines: 1,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 16),
-                      onPressed: onClose,
-                      tooltip: context.translate.connection.closeConnection,
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(
-                        minWidth: 28,
-                        minHeight: 28,
+                    ModernTooltip(
+                      message: context.translate.connection.closeConnection,
+                      child: IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 16),
+                        onPressed: onClose,
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 28,
+                          minHeight: 28,
+                        ),
+                        color: colorScheme.onSurfaceVariant,
                       ),
-                      color: colorScheme.onSurfaceVariant,
                     ),
                   ],
                 ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:stelliberty/clash/providers/clash_provider.dart';
 import 'package:stelliberty/i18n/i18n.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 // 代理组选择器组件
 class ProxyGroupSelector extends StatelessWidget {
@@ -135,24 +136,28 @@ class ProxyGroupSelector extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // 左移按钮
-              IconButton(
-                onPressed: _canScrollLeft
-                    ? () => _scrollByDistance(-300)
-                    : null,
-                icon: const Icon(Icons.chevron_left),
-                tooltip: context.translate.proxy.scrollLeft,
-                iconSize: 20,
-                visualDensity: VisualDensity.compact,
+              ModernTooltip(
+                message: context.translate.proxy.scrollLeft,
+                child: IconButton(
+                  onPressed: _canScrollLeft
+                      ? () => _scrollByDistance(-300)
+                      : null,
+                  icon: const Icon(Icons.chevron_left),
+                  iconSize: 20,
+                  visualDensity: VisualDensity.compact,
+                ),
               ),
               // 右移按钮
-              IconButton(
-                onPressed: _canScrollRight
-                    ? () => _scrollByDistance(300)
-                    : null,
-                icon: const Icon(Icons.chevron_right),
-                tooltip: context.translate.proxy.scrollRight,
-                iconSize: 20,
-                visualDensity: VisualDensity.compact,
+              ModernTooltip(
+                message: context.translate.proxy.scrollRight,
+                child: IconButton(
+                  onPressed: _canScrollRight
+                      ? () => _scrollByDistance(300)
+                      : null,
+                  icon: const Icon(Icons.chevron_right),
+                  iconSize: 20,
+                  visualDensity: VisualDensity.compact,
+                ),
               ),
             ],
           ),

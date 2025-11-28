@@ -11,6 +11,7 @@ import 'package:stelliberty/ui/widgets/proxy/proxy_node_grid.dart';
 import 'package:stelliberty/utils/logger.dart';
 import 'package:stelliberty/i18n/i18n.dart';
 import 'package:stelliberty/clash/data/clash_model.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 // 代理页面状态数据类（用于优化 Selector）
 class _ProxyPageState {
@@ -483,23 +484,27 @@ class _ProxyPageWidgetState extends State<ProxyPage>
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    onPressed: canScrollLeft
-                        ? () => _scrollTabByDistance(-_tabScrollDistance)
-                        : null,
-                    icon: const Icon(Icons.chevron_left),
-                    tooltip: context.translate.proxy.scrollLeft,
-                    iconSize: 20,
-                    visualDensity: VisualDensity.compact,
+                  ModernTooltip(
+                    message: context.translate.proxy.scrollLeft,
+                    child: IconButton(
+                      onPressed: canScrollLeft
+                          ? () => _scrollTabByDistance(-_tabScrollDistance)
+                          : null,
+                      icon: const Icon(Icons.chevron_left),
+                      iconSize: 20,
+                      visualDensity: VisualDensity.compact,
+                    ),
                   ),
-                  IconButton(
-                    onPressed: canScrollRight
-                        ? () => _scrollTabByDistance(_tabScrollDistance)
-                        : null,
-                    icon: const Icon(Icons.chevron_right),
-                    tooltip: context.translate.proxy.scrollRight,
-                    iconSize: 20,
-                    visualDensity: VisualDensity.compact,
+                  ModernTooltip(
+                    message: context.translate.proxy.scrollRight,
+                    child: IconButton(
+                      onPressed: canScrollRight
+                          ? () => _scrollTabByDistance(_tabScrollDistance)
+                          : null,
+                      icon: const Icon(Icons.chevron_right),
+                      iconSize: 20,
+                      visualDensity: VisualDensity.compact,
+                    ),
                   ),
                 ],
               );

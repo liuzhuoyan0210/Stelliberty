@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stelliberty/clash/providers/clash_provider.dart';
 import 'package:stelliberty/i18n/i18n.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 // 代理页面操作按钮栏
 class ProxyActionBar extends StatelessWidget {
@@ -46,30 +47,36 @@ class ProxyActionBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          IconButton(
-            onPressed: canTestDelays ? _handleTestDelays : null,
-            icon: Icon(
-              Icons.network_check,
-              size: 18,
-              color: clashProvider.isBatchTesting ? Colors.grey : null,
+          ModernTooltip(
+            message: context.translate.proxy.testAllDelays,
+            child: IconButton(
+              onPressed: canTestDelays ? _handleTestDelays : null,
+              icon: Icon(
+                Icons.network_check,
+                size: 18,
+                color: clashProvider.isBatchTesting ? Colors.grey : null,
+              ),
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
             ),
-            tooltip: context.translate.proxy.testAllDelays,
-            visualDensity: VisualDensity.compact,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           ),
-          IconButton(
-            onPressed: canLocate ? onLocate : null,
-            icon: const Icon(Icons.gps_fixed, size: 18),
-            tooltip: context.translate.proxy.locate,
-            visualDensity: VisualDensity.compact,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          ModernTooltip(
+            message: context.translate.proxy.locate,
+            child: IconButton(
+              onPressed: canLocate ? onLocate : null,
+              icon: const Icon(Icons.gps_fixed, size: 18),
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            ),
           ),
-          IconButton(
-            onPressed: _handleSortModeChange,
-            icon: Icon(_getSortIcon(sortMode), size: 18),
-            tooltip: _getSortTooltip(context, sortMode),
-            visualDensity: VisualDensity.compact,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          ModernTooltip(
+            message: _getSortTooltip(context, sortMode),
+            child: IconButton(
+              onPressed: _handleSortModeChange,
+              icon: Icon(_getSortIcon(sortMode), size: 18),
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            ),
           ),
         ],
       ),

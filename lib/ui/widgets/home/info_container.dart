@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:stelliberty/ui/common/modern_switch.dart';
+import 'package:stelliberty/ui/common/modern_tooltip.dart';
 
 // 信息行数据模型
 //
@@ -313,7 +314,7 @@ class InfoContainer extends StatelessWidget {
     );
 
     if (row.onActionTap != null) {
-      return Tooltip(
+      return ModernTooltip(
         message: row.actionTooltip ?? '',
         child: InkWell(
           onTap: row.onActionTap,
