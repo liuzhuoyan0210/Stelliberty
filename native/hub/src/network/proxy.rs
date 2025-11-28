@@ -102,10 +102,11 @@ mod windows_impl {
                 std::mem::size_of::<INTERNET_PER_CONN_OPTION_LISTW>() as u32,
             );
 
-            if result.is_err() {
-                return ProxyResult::Error(
-                    "Failed to set proxy for default connection".to_string(),
-                );
+            match result {
+                Ok(_) => {}
+                Err(_) => {
+                    return ProxyResult::Error("设置默认连接代理失败".to_string());
+                }
             }
 
             // 设置 RAS 连接
@@ -188,10 +189,11 @@ mod windows_impl {
                 std::mem::size_of::<INTERNET_PER_CONN_OPTION_LISTW>() as u32,
             );
 
-            if result.is_err() {
-                return ProxyResult::Error(
-                    "Failed to set PAC proxy for default connection".to_string(),
-                );
+            match result {
+                Ok(_) => {}
+                Err(_) => {
+                    return ProxyResult::Error("设置默认连接 PAC 代理失败".to_string());
+                }
             }
 
             // 设置 RAS 连接
@@ -236,8 +238,9 @@ mod windows_impl {
                 std::mem::size_of::<INTERNET_PER_CONN_OPTION_LISTW>() as u32,
             );
 
-            if result.is_err() {
-                return ProxyResult::Error("Failed to disable proxy".to_string());
+            match result {
+                Ok(_) => {}
+                Err(_) => return ProxyResult::Error("禁用代理失败".to_string()),
             }
 
             // 禁用 RAS 连接的代理
@@ -335,12 +338,15 @@ mod windows_impl {
                 &mut size,
             );
 
-            if result.is_err() {
-                log::warn!("查询系统代理设置失败");
-                return ProxyInfo {
-                    enabled: false,
-                    server: None,
-                };
+            match result {
+                Ok(_) => {}
+                Err(_) => {
+                    log::warn!("查询系统代理设置失败");
+                    return ProxyInfo {
+                        enabled: false,
+                        server: None,
+                    };
+                }
             }
 
             // 读取代理标志
@@ -618,8 +624,9 @@ mod linux_impl {
             .args(["set", "org.gnome.system.proxy", "mode", "manual"])
             .status();
 
-        if result.is_err() {
-            return ProxyResult::Error("设置 GNOME 代理模式失败".to_string());
+        match result {
+            Ok(_) => {}
+            Err(_) => return ProxyResult::Error("设置 GNOME 代理模式失败".to_string()),
         }
 
         // 设置忽略的主机列表
@@ -727,8 +734,9 @@ mod linux_impl {
             .args(["set", "org.gnome.system.proxy", "mode", "none"])
             .status();
 
-        if result.is_err() {
-            return ProxyResult::Error("禁用 GNOME 代理失败".to_string());
+        match result {
+            Ok(_) => {}
+            Err(_) => return ProxyResult::Error("禁用 GNOME 代理失败".to_string()),
         }
 
         log::info!("Linux GNOME 系统代理已禁用");
@@ -757,8 +765,9 @@ mod linux_impl {
             ])
             .status();
 
-        if result.is_err() {
-            return ProxyResult::Error("禁用 KDE 代理失败".to_string());
+        match result {
+            Ok(_) => {}
+            Err(_) => return ProxyResult::Error("禁用 KDE 代理失败".to_string()),
         }
 
         log::info!("Linux KDE 系统代理已禁用");
