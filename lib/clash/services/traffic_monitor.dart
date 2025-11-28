@@ -18,6 +18,9 @@ class TrafficMonitor {
   int _totalDownload = 0;
   DateTime? _lastTimestamp;
 
+  // 缓存最后一次的流量数据，避免组件重建时显示零值
+  TrafficData? _lastTrafficData;
+
   // 流量数据流（供外部监听）
   Stream<TrafficData>? get trafficStream => _controller?.stream;
 
@@ -28,20 +31,22 @@ class TrafficMonitor {
   int get totalUpload => _totalUpload;
   int get totalDownload => _totalDownload;
 
+  // 获取最后一次的流量数据（用于组件初始化）
+  TrafficData? get lastTrafficData => _lastTrafficData;
+
   // 重置累计流量
   void resetTotalTraffic() {
     _totalUpload = 0;
     _totalDownload = 0;
     _lastTimestamp = null;
+    _lastTrafficData = null;
     Logger.info('累计流量已重置');
   }
 
   // 开始监控流量（IPC 模式）
   // 注意：不再需要 baseUrl 参数，IPC 通信由 Rust 处理
   Future<void> startMonitoring([String? _]) async {
-    if (_isMonitoring) {
-      return;
-    }
+    if (_isMonitoring) return;
 
     _isMonitoring = true;
 
@@ -60,9 +65,7 @@ class TrafficMonitor {
 
   // 停止监控流量
   Future<void> stopMonitoring() async {
-    if (!_isMonitoring) {
-      return;
-    }
+    if (!_isMonitoring) return;
 
     _isMonitoring = false;
 
@@ -109,6 +112,9 @@ class TrafficMonitor {
         totalUpload: _totalUpload,
         totalDownload: _totalDownload,
       );
+
+      // 缓存最后的数据
+      _lastTrafficData = trafficData;
 
       // 推送到流
       _controller?.add(trafficData);

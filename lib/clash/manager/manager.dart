@@ -42,6 +42,13 @@ class ClashManager extends ChangeNotifier {
   ClashApiClient? get apiClient => isRunning ? _apiClient : null;
   Stream<TrafficData>? get trafficStream => _trafficMonitor.trafficStream;
 
+  // 获取当前累计流量
+  int get totalUpload => _trafficMonitor.totalUpload;
+  int get totalDownload => _trafficMonitor.totalDownload;
+
+  // 获取最后一次的流量数据（用于组件初始化，避免显示零值）
+  TrafficData? get lastTrafficData => _trafficMonitor.lastTrafficData;
+
   void resetTrafficStats() {
     _trafficMonitor.resetTotalTraffic();
   }
@@ -97,25 +104,25 @@ class ClashManager extends ChangeNotifier {
 
   // 覆写失败处理（公开接口，供 LifecycleManager 调用）
   Future<void> onOverridesFailed() async {
-    // 防重复调用保护
     if (_isHandlingOverridesFailed) {
       Logger.warning('覆写失败回调正在处理中，跳过重复调用');
       return;
     }
 
-    if (_onOverridesFailedCallback != null) {
-      _isHandlingOverridesFailed = true;
-      try {
-        Logger.info('开始执行覆写失败回调');
-        await _onOverridesFailedCallback!();
-        Logger.info('覆写失败回调执行完成');
-      } catch (e) {
-        Logger.error('覆写失败回调执行异常：$e');
-      } finally {
-        _isHandlingOverridesFailed = false;
-      }
-    } else {
+    if (_onOverridesFailedCallback == null) {
       Logger.debug('覆写失败回调未设置，跳过处理');
+      return;
+    }
+
+    _isHandlingOverridesFailed = true;
+    try {
+      Logger.info('开始执行覆写失败回调');
+      await _onOverridesFailedCallback!();
+      Logger.info('覆写失败回调执行完成');
+    } catch (e) {
+      Logger.error('覆写失败回调执行异常：$e');
+    } finally {
+      _isHandlingOverridesFailed = false;
     }
   }
 
@@ -306,9 +313,7 @@ class ClashManager extends ChangeNotifier {
   // 调度配置热重载（使用防抖机制）
   // 在指定时间内的多次配置修改只会触发一次热重载
   void _scheduleConfigReload(String reason) {
-    if (!isRunning || currentConfigPath == null) {
-      return;
-    }
+    if (!isRunning || currentConfigPath == null) return;
 
     // 取消之前的定时器
     _configReloadDebounceTimer?.cancel();

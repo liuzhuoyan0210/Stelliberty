@@ -21,90 +21,115 @@ class _TrafficStatsCardState extends State<TrafficStatsCard> {
   final List<double> _uploadHistory = List.generate(30, (_) => 0.0);
   final List<double> _downloadHistory = List.generate(30, (_) => 0.0);
 
-  // 累计流量统计（字节）
-  int _totalUpload = 0;
-  int _totalDownload = 0;
-
   // 降采样计数器：减少波形图重绘频率
   int _updateCounter = 0;
   static const _updateInterval = 3; // 每 3 次数据只更新 1 次波形
 
+  // 缓存最后一次的流量数据，避免页面切换时显示零值
+  TrafficData? _lastTrafficData;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 在 Widget 树构建完成后获取缓存数据，避免 initState 中使用 context 的问题
+    _lastTrafficData ??= context.read<ClashManager>().lastTrafficData;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final manager = context.read<ClashManager>();
+
     // 使用 select 精确监听 isRunning 状态，避免不必要的重建
-    final isRunning = context.select<ClashManager, bool>(
-      (manager) => manager.isRunning,
-    );
+    final isRunning = context.select<ClashManager, bool>((m) => m.isRunning);
 
-    return BaseCard(
-      icon: Icons.data_usage,
-      title: context.translate.home.trafficStats,
-      trailing: _buildTotalTrafficDisplay(context),
-      child: isRunning
-          ? StreamBuilder<TrafficData>(
-              stream: context.read<ClashManager>().trafficStream,
-              initialData: TrafficData.zero,
-              builder: (context, snapshot) {
-                final traffic = snapshot.data ?? TrafficData.zero;
+    return isRunning
+        ? StreamBuilder<TrafficData>(
+            stream: context.read<ClashManager>().trafficStream,
+            builder: (context, snapshot) {
+              // 优先使用流中的数据，如果没有则使用缓存的最后数据
+              final traffic =
+                  snapshot.data ?? _lastTrafficData ?? TrafficData.zero;
 
-                // 降采样：只处理部分数据更新波形
-                _updateCounter++;
-                final shouldUpdateWave = _updateCounter >= _updateInterval;
-                if (shouldUpdateWave) {
-                  _updateCounter = 0;
-                  _updateHistory(traffic);
-                  // 累加流量统计
-                  _totalUpload += traffic.upload;
-                  _totalDownload += traffic.download;
-                }
+              // 缓存最新的数据（只在有新数据时更新）
+              if (snapshot.hasData) {
+                _lastTrafficData = snapshot.data;
+              }
 
-                return _buildTrafficContent(
+              // 降采样：只处理部分数据更新波形
+              _updateCounter++;
+              final shouldUpdateWave = _updateCounter >= _updateInterval;
+              if (shouldUpdateWave) {
+                _updateCounter = 0;
+                _updateHistory(traffic);
+              }
+
+              return BaseCard(
+                icon: Icons.data_usage,
+                title: context.translate.home.trafficStats,
+                trailing: _buildTotalTrafficDisplay(context, traffic),
+                child: _buildTrafficContent(
                   context,
                   traffic,
                   isRunning,
                   shouldUpdateWave: shouldUpdateWave,
-                );
-              },
-            )
-          : _buildTrafficContent(context, TrafficData.zero, isRunning),
-    );
+                ),
+              );
+            },
+          )
+        : BaseCard(
+            icon: Icons.data_usage,
+            title: context.translate.home.trafficStats,
+            trailing: _buildTotalTrafficDisplay(
+              context,
+              manager.lastTrafficData ?? TrafficData.zero,
+            ),
+            child: _buildTrafficContent(
+              context,
+              manager.lastTrafficData ?? TrafficData.zero,
+              isRunning,
+            ),
+          );
   }
 
-  // 构建右上角累计流量显示
-  Widget _buildTotalTrafficDisplay(BuildContext context) {
+  // 构建累计流量显示
+  Widget _buildTotalTrafficDisplay(BuildContext context, TrafficData traffic) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          Icons.arrow_upward,
-          size: 12,
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
-        ),
-        const SizedBox(width: 2),
         Text(
-          _formatBytes(_totalUpload),
+          '${context.translate.home.upload}：',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Theme.of(
               context,
-            ).colorScheme.onSurface.withValues(alpha: 0.7),
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 11,
+          ),
+        ),
+        Text(
+          _formatBytes(traffic.totalUpload),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
             fontFeatures: [const FontFeature.tabularFigures()],
           ),
         ),
-        const SizedBox(width: 8),
-        Icon(
-          Icons.arrow_downward,
-          size: 12,
-          color: Colors.green.withValues(alpha: 0.7),
-        ),
-        const SizedBox(width: 2),
+        const SizedBox(width: 12),
         Text(
-          _formatBytes(_totalDownload),
+          '${context.translate.home.download}：',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Theme.of(
               context,
-            ).colorScheme.onSurface.withValues(alpha: 0.7),
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
             fontSize: 11,
+          ),
+        ),
+        Text(
+          _formatBytes(traffic.totalDownload),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Colors.green,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
             fontFeatures: [const FontFeature.tabularFigures()],
           ),
         ),
@@ -170,25 +195,15 @@ class _TrafficStatsCardState extends State<TrafficStatsCard> {
           child: SizedBox(
             width: double.infinity,
             height: 120,
-            child: shouldUpdateWave
-                ? CustomPaint(
-                    size: const Size(double.infinity, 120),
-                    painter: _TrafficWavePainter(
-                      uploadHistory: _uploadHistory,
-                      downloadHistory: _downloadHistory,
-                      uploadColor: Theme.of(context).colorScheme.primary,
-                      downloadColor: Colors.green,
-                    ),
-                  )
-                : CustomPaint(
-                    size: const Size(double.infinity, 120),
-                    painter: _TrafficWavePainter(
-                      uploadHistory: _uploadHistory,
-                      downloadHistory: _downloadHistory,
-                      uploadColor: Theme.of(context).colorScheme.primary,
-                      downloadColor: Colors.green,
-                    ),
-                  ),
+            child: CustomPaint(
+              size: const Size(double.infinity, 120),
+              painter: _TrafficWavePainter(
+                uploadHistory: _uploadHistory,
+                downloadHistory: _downloadHistory,
+                uploadColor: Theme.of(context).colorScheme.primary,
+                downloadColor: Colors.green,
+              ),
+            ),
           ),
         ),
 
@@ -271,12 +286,11 @@ class _TrafficStatsCardState extends State<TrafficStatsCard> {
   void _resetTraffic(BuildContext context) {
     final clashManager = context.read<ClashManager>();
     clashManager.resetTrafficStats();
-    // 清空历史数据和累计统计
+    // 清空历史数据和本地缓存
     setState(() {
       _uploadHistory.fillRange(0, _uploadHistory.length, 0);
       _downloadHistory.fillRange(0, _downloadHistory.length, 0);
-      _totalUpload = 0;
-      _totalDownload = 0;
+      _lastTrafficData = TrafficData.zero;
     });
   }
 }
