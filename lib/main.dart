@@ -14,6 +14,7 @@ import 'package:stelliberty/clash/services/override_service.dart';
 import 'package:stelliberty/clash/core/state_hub.dart';
 import 'package:stelliberty/clash/core/service_state.dart';
 import 'package:stelliberty/utils/logger.dart';
+import 'package:stelliberty/utils/windows_injector.dart';
 import 'package:stelliberty/services/path_service.dart';
 import 'package:stelliberty/storage/preferences.dart';
 import 'package:stelliberty/clash/storage/preferences.dart';
@@ -88,6 +89,11 @@ void main(List<String> args) async {
 
   // 加载语言设置
   await initializeLanguage();
+
+  // Windows 平台：注入键盘事件修复器（修复 Win+V 剪贴板历史问题）
+  if (Platform.isWindows) {
+    WindowsInjector.instance.injectKeyData();
+  }
 
   // 启动 Flutter UI
   runApp(
