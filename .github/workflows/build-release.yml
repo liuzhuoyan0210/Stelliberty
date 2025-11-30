@@ -185,7 +185,7 @@ jobs:
               # 输出格式化的提交信息
               echo "### $subject"
               echo ""
-              echo "**提交**: [\`${hash:0:7}\`](https://github.com/${{ github.repository }}/commit/$hash) | **作者**: $author"
+              echo "**提交**: [\\`$hash:0:7\`](https://github.com/${{ github.repository }}/commit/$hash) | **作者**: $author"
               echo ""
               
               echo "---"
@@ -245,6 +245,8 @@ jobs:
 
       - name: 配置 Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
 
       - name: 安装项目依赖
         shell: pwsh
@@ -269,19 +271,30 @@ jobs:
         run: |
           Write-Host "🔧 正在运行预构建脚本（包含 Inno Setup 安装）..."
           
-          # 捕获预构建脚本的输出
-          $output = dart run scripts/prebuild.dart --installer 2>&1 | Tee-Object -Variable prebuildOutput
-          
-          # 从输出中提取 Mihomo 版本号
-          $versionLine = $prebuildOutput | Select-String -Pattern "找到核心:.*版本号:\s*v([\d\.]+)" | Select-Object -First 1
-          
-          if ($versionLine -and $versionLine.Matches.Groups.Count -gt 1) {
-            $mihomoVersion = $versionLine.Matches.Groups[1].Value
+          # 运行并捕获输出
+          $prebuildOutput = dart run scripts/prebuild.dart --installer 2>&1 | Tee-Object -Variable prebuildOutput
+
+          # 尝试多个可能的匹配格式（支持中文/英文、可选的 v 前缀）
+          $patterns = @(
+            '找到核心.*版本号[:：]\s*v?([0-9]+(?:\.[0-9]+)*)',
+            'Mihomo.*version[:：]\s*v?([0-9]+(?:\.[0-9]+)*)',
+            'MIHOMO_CORE_VERSION[:：]\s*v?([0-9]+(?:\.[0-9]+)*)'
+          )
+
+          $mihomoVersion = $null
+          foreach ($p in $patterns) {
+            $match = $prebuildOutput | Select-String -Pattern $p -AllMatches | Select-Object -First 1
+            if ($match -and $match.Matches.Count -gt 0) {
+              $mihomoVersion = $match.Matches.Groups[1].Value
+              break
+            }
+          }
+
+          if ($mihomoVersion) {
             Write-Host "✅ 检测到 Mihomo 核心版本: $mihomoVersion"
             echo "mihomo_version=$mihomoVersion" >> $env:GITHUB_OUTPUT
           } else {
-            Write-Host "⚠️ 未能从输出中提取 Mihomo 版本号"
-            echo "mihomo_version=unknown" >> $env:GITHUB_OUTPUT
+            Write-Warning "⚠️ 未能从输出中提取 Mihomo 版本号（将设为 unknown）"
           }
 
       - name: 生成 Rust 桥接代码
