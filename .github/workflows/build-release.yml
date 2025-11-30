@@ -213,17 +213,15 @@ jobs:
 
   # ------------ 构建 job（依赖 prepare） ------------
   build:
-    name: 构建 Windows-${{ matrix.arch }}
+    name: 构建 MacOS-${{ matrix.arch }}
     needs: prepare
     outputs:
       mihomo_version: ${{ steps.prebuild.outputs.mihomo_version }}
     strategy:
       matrix:
         include:
-          - arch: x64
-            runs-on: windows-latest
           - arch: arm64
-            runs-on: windows-11-arm
+            runs-on: macos-latest
     runs-on: ${{ matrix.runs-on }}
 
     steps:
